@@ -15,11 +15,11 @@ class Car
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $make = null;
-
     #[ORM\Column(nullable: true)]
     private ?int $year = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $make = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $model = null;
@@ -44,18 +44,6 @@ class Car
         return $this->id;
     }
 
-    public function getMake(): ?string
-    {
-        return $this->make;
-    }
-
-    public function setMake(?string $make): static
-    {
-        $this->make = $make;
-
-        return $this;
-    }
-
     public function getYear(): ?int
     {
         return $this->year;
@@ -64,6 +52,18 @@ class Car
     public function setYear(?int $year): static
     {
         $this->year = $year;
+
+        return $this;
+    }
+
+    public function getMake(): ?string
+    {
+        return $this->make;
+    }
+
+    public function setMake(?string $make): static
+    {
+        $this->make = $make;
 
         return $this;
     }

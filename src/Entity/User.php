@@ -5,26 +5,34 @@ namespace App\Entity;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
-class User
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 180)]
     private ?string $email = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $password = null;
+    /**
+     * @var list<string> The user roles
+     */
+    #[ORM\Column]
+    private array $roles = [];
 
-    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
-    private ?\DateTimeImmutable $createdAt = null;
+    /**
+     * @var string The hashed password
+     */
+    #[ORM\Column]
+    private ?string $password = null;
 
     /**
      * @var Collection<int, Car>
@@ -32,9 +40,16 @@ class User
     #[ORM\OneToMany(targetEntity: Car::class, mappedBy: 'owner')]
     private Collection $cars;
 
+    /**
+     * @var Collection<int, MaintenanceActivity>
+     */
+    #[ORM\OneToMany(targetEntity: MaintenanceActivity::class, mappedBy: 'owner')]
+    private Collection $maintenanceActivities;
+
     public function __construct()
     {
         $this->cars = new ArrayCollection();
+        $this->maintenanceActivities = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -54,7 +69,44 @@ class User
         return $this;
     }
 
-    public function getPassword(): ?string
+    /**
+     * A visual identifier that represents this user.
+     *
+     * @see UserInterface
+     */
+    public function getUserIdentifier(): string
+    {
+        return (string) $this->email;
+    }
+
+    /**
+     * @see UserInterface
+     *
+     * @return list<string>
+     */
+    public function getRoles(): array
+    {
+        $roles = $this->roles;
+        // guarantee every user at least has ROLE_USER
+        $roles[] = 'ROLE_USER';
+
+        return array_unique($roles);
+    }
+
+    /**
+     * @param list<string> $roles
+     */
+    public function setRoles(array $roles): static
+    {
+        $this->roles = $roles;
+
+        return $this;
+    }
+
+    /**
+     * @see PasswordAuthenticatedUserInterface
+     */
+    public function getPassword(): string
     {
         return $this->password;
     }
@@ -66,16 +118,13 @@ class User
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    /**
+     * @see UserInterface
+     */
+    public function eraseCredentials(): void
     {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(?\DateTimeImmutable $createdAt): static
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
+        // If you store any temporary, sensitive data on the user, clear it here
+        // $this->plainPassword = null;
     }
 
     /**
@@ -102,6 +151,36 @@ class User
             // set the owning side to null (unless already changed)
             if ($car->getOwner() === $this) {
                 $car->setOwner(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, MaintenanceActivity>
+     */
+    public function getMaintenanceActivities(): Collection
+    {
+        return $this->maintenanceActivities;
+    }
+
+    public function addMaintenanceActivity(MaintenanceActivity $maintenanceActivity): static
+    {
+        if (!$this->maintenanceActivities->contains($maintenanceActivity)) {
+            $this->maintenanceActivities->add($maintenanceActivity);
+            $maintenanceActivity->setOwner($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMaintenanceActivity(MaintenanceActivity $maintenanceActivity): static
+    {
+        if ($this->maintenanceActivities->removeElement($maintenanceActivity)) {
+            // set the owning side to null (unless already changed)
+            if ($maintenanceActivity->getOwner() === $this) {
+                $maintenanceActivity->setOwner(null);
             }
         }
 
