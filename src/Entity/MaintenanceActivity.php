@@ -15,6 +15,7 @@ class MaintenanceActivity
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'maintenanceActivities')]
+    #[ORM\JoinColumn(nullable: false)]
     private ?Car $car = null;
 
     #[ORM\Column(length: 255)]
@@ -23,7 +24,7 @@ class MaintenanceActivity
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $date = null;
 
     public function getId(): ?int

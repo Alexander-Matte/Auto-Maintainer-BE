@@ -15,18 +15,18 @@ class Car
     #[ORM\Column]
     private ?int $id = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $make = null;
+
     #[ORM\Column(nullable: true)]
     private ?int $year = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $make = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
     private ?string $model = null;
 
-    #[ORM\ManyToOne(inversedBy: 'car')]
+    #[ORM\ManyToOne(inversedBy: 'cars')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $user_id = null;
+    private ?User $owner = null;
 
     /**
      * @var Collection<int, MaintenanceActivity>
@@ -44,18 +44,6 @@ class Car
         return $this->id;
     }
 
-    public function getYear(): ?int
-    {
-        return $this->year;
-    }
-
-    public function setYear(?int $year): static
-    {
-        $this->year = $year;
-
-        return $this;
-    }
-
     public function getMake(): ?string
     {
         return $this->make;
@@ -64,6 +52,18 @@ class Car
     public function setMake(?string $make): static
     {
         $this->make = $make;
+
+        return $this;
+    }
+
+    public function getYear(): ?int
+    {
+        return $this->year;
+    }
+
+    public function setYear(?int $year): static
+    {
+        $this->year = $year;
 
         return $this;
     }
@@ -80,14 +80,14 @@ class Car
         return $this;
     }
 
-    public function getUserId(): ?User
+    public function getOwner(): ?User
     {
-        return $this->user_id;
+        return $this->owner;
     }
 
-    public function setUserId(?User $user_id): static
+    public function setOwner(?User $owner): static
     {
-        $this->user_id = $user_id;
+        $this->owner = $owner;
 
         return $this;
     }

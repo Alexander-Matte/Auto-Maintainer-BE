@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -19,15 +20,21 @@ class User
     #[ORM\Column(length: 255)]
     private ?string $email = null;
 
+    #[ORM\Column(length: 255)]
+    private ?string $password = null;
+
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $createdAt = null;
+
     /**
      * @var Collection<int, Car>
      */
-    #[ORM\OneToMany(targetEntity: Car::class, mappedBy: 'user_id')]
-    private Collection $car;
+    #[ORM\OneToMany(targetEntity: Car::class, mappedBy: 'owner')]
+    private Collection $cars;
 
     public function __construct()
     {
-        $this->car = new ArrayCollection();
+        $this->cars = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -47,19 +54,43 @@ class User
         return $this;
     }
 
+    public function getPassword(): ?string
+    {
+        return $this->password;
+    }
+
+    public function setPassword(string $password): static
+    {
+        $this->password = $password;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(?\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
     /**
      * @return Collection<int, Car>
      */
-    public function getCar(): Collection
+    public function getCars(): Collection
     {
-        return $this->car;
+        return $this->cars;
     }
 
     public function addCar(Car $car): static
     {
-        if (!$this->car->contains($car)) {
-            $this->car->add($car);
-            $car->setUserId($this);
+        if (!$this->cars->contains($car)) {
+            $this->cars->add($car);
+            $car->setOwner($this);
         }
 
         return $this;
@@ -67,10 +98,10 @@ class User
 
     public function removeCar(Car $car): static
     {
-        if ($this->car->removeElement($car)) {
+        if ($this->cars->removeElement($car)) {
             // set the owning side to null (unless already changed)
-            if ($car->getUserId() === $this) {
-                $car->setUserId(null);
+            if ($car->getOwner() === $this) {
+                $car->setOwner(null);
             }
         }
 
