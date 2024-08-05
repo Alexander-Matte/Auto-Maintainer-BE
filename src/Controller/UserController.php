@@ -1,9 +1,7 @@
 <?php
 
-
 namespace App\Controller;
 
-use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -49,18 +47,9 @@ class UserController extends AbstractController
     }
 
     #[Route('/api/users', methods: ['POST'])]
-    public function createUser(Request $request): JsonResponse
+    public function createUser(Request $request, RegistrationController $registrationController): JsonResponse
     {
-        $data = $request->getContent();
-        $user = $this->serializer->deserialize($data, User::class, 'json');
-        $errors = $this->validator->validate($user);
-        if (count($errors) > 0) {
-            return new JsonResponse($errors, Response::HTTP_BAD_REQUEST);
-        }
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
-        $data = $this->serializer->serialize($user, 'json', ['groups' => 'user:read']);
-        return new JsonResponse($data, Response::HTTP_CREATED, [], true);
+        return $registrationController->register($request);
     }
 
     #[Route('/api/users/{id}', methods: ['PUT'])]
